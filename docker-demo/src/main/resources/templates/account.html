@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tài khoản · SQLi Lab</title><link rel="stylesheet" href="/lab-pages.css"><script src="/lab-pages.js" defer></script></head>
+<body><main class="page">
+    <nav><a href="/">← SQLi Lab</a><a href="/admin">Trang quản trị</a><button id="logoutButton" type="button">Đăng xuất</button></nav>
+    <p class="eyebrow">Trang được bảo vệ · Phiên đăng nhập</p><h1>Tài khoản của bạn</h1>
+    <p class="muted">Máy chủ chỉ trả về trang này khi cookie phiên tương ứng với tài khoản đang tồn tại.</p>
+    <section class="card"><h2>Thông tin từ cơ sở dữ liệu</h2><dl>
+        <dt>ID</dt><dd th:text="${user.id}"></dd><dt>Tên đăng nhập</dt><dd th:text="${user.username}"></dd>
+        <dt>Email</dt><dd th:text="${user.email}"></dd><dt>Quyền hiện tại</dt><dd><span class="badge" th:text="${user.role}"></span></dd>
+        <dt>Truy vấn đăng nhập</dt><dd th:text="${mode == 'prepared' ? 'Prepared Statement' : 'Nối chuỗi SQL'}"></dd>
+    </dl></section>
+    <section class="notice danger" th:if="${bypass}"><strong>Đã có bằng chứng vượt đăng nhập.</strong><p>Thông tin nhập không khớp tài khoản nhưng truy vấn vẫn trả về tài khoản này và máy chủ tạo phiên. Bạn đã truy cập được trang cần đăng nhập.</p></section>
+    <section class="notice" th:unless="${bypass}"><strong>Đăng nhập bằng thông tin hợp lệ.</strong><p>Phiên hiện tại được tạo từ thông tin khớp với tài khoản trong cơ sở dữ liệu.</p></section>
+    <section class="card"><h2>Kiểm tra tác động</h2><p>Mở trang quản trị để kiểm tra quyền. Máy chủ đọc lại quyền trong cơ sở dữ liệu ở mỗi lần truy cập; tài khoản có quyền <code>admin</code> mới xem được danh sách người dùng tại đó.</p><a class="button" href="/admin">Mở trang quản trị →</a></section>
+    <p id="feedback" role="status"></p>
+</main></body></html>

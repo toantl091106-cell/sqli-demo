@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Cyber Lab | Phòng thực hành SQLi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .code-font { font-family: 'Fira Code', monospace; }
+
+        .cyber-card {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .cyber-header {
+            background: linear-gradient(90deg, rgba(31,41,55,0.6) 0%, rgba(17,24,39,0) 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .glow-blue { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+
+        .form-control, .form-select {
+            background-color: #0f172a !important;
+            border: 1px solid #334155 !important;
+            color: #f8fafc !important;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .table-cyber {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+        .table-cyber th {
+            background-color: #0f172a;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #1e293b;
+        }
+        .table-cyber td { border-bottom: 1px solid #1e293b; }
+
+        .terminal-window {
+            background-color: #030712;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            padding: 1rem;
+            min-height: 120px;
+            max-height: 480px;
+            overflow-y: auto;
+            color: #e5e7eb;
+            font-size: 0.875rem;
+        }
+
+        .terminal-header {
+            background-color: #111827;
+            padding: 6px 12px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid #1f2937;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        @keyframes rowGlowNew {
+            0% { background-color: rgba(16, 185, 129, 0.4); }
+            100% { background-color: transparent; }
+        }
+        @keyframes rowGlowUpdated {
+            0% { background-color: rgba(245, 158, 11, 0.4); }
+            100% { background-color: transparent; }
+        }
+        .row-added { animation: rowGlowNew 2s ease-out; }
+        .row-updated { animation: rowGlowUpdated 2s ease-out; }
+        .session-card { border-left: 3px solid var(--accent-blue); }
+        .result-sql { white-space: pre-wrap; overflow-wrap: anywhere; }
+        .table-cyber td { overflow-wrap: anywhere; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    </style>
+</head>
+<body class="py-4">
+
+    <div class="container-fluid px-4">
+        <!-- TOP NAVBAR / HEADER -->
+        <header class="d-flex flex-wrap gap-3 justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary-subtle">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-2 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3">
+                    <i class="fa-solid fa-shield-halved fa-2x text-primary glow-blue"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0 text-white tracking-wide">SQL INJECTION <span class="text-primary">CYBER LAB</span></h3>
+                    <small class="text-muted"><i class="fa-solid fa-microchip me-1"></i> Interactive Security Testing & Defense Environment</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span id="serverBadge" class="badge bg-dark border border-secondary text-light px-3 py-2 code-font" role="status">
+                    Đang kiểm tra kết nối…
+                </span>
+                <button id="resetButton" data-mutation-control type="button" onclick="resetDatabase()" class="btn btn-outline-warning btn-sm fw-semibold shadow-sm px-3">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Reset Database
+                </button>
+            </div>
+        </header>
+
+        <section class="cyber-card session-card p-3 mb-4" aria-labelledby="sessionTitle">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h6 id="sessionTitle" class="fw-bold text-info mb-2"><i class="fa-solid fa-user-shield me-2"></i>PHIÊN ĐĂNG NHẬP</h6>
+                    <div id="sessionStatus" class="small" role="status">Đang kiểm tra phiên…</div>
+                    <div id="sessionDetails" class="small text-muted mt-2"></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/account" class="btn btn-outline-info btn-sm">Trang tài khoản được bảo vệ</a>
+                    <a href="/admin" class="btn btn-outline-primary btn-sm">Trang quản trị (admin)</a>
+                    <button id="logoutButton" data-mutation-control type="button" onclick="logout()" class="btn btn-outline-secondary btn-sm" hidden>Đăng xuất</button>
+                </div>
+            </div>
+            <p class="small text-muted mt-2 mb-0">Đăng nhập ở kịch bản 1 rồi mở trang tài khoản hoặc quản trị để kiểm chứng quyền truy cập. Đổi chế độ truy vấn không tự thay đổi phiên đã tạo.</p>
+        </section>
+
+        <!-- MAIN CONTENT LAYOUT -->
+        <div class="row g-4">
+
+            <!-- LEFT PANEL: ATTACK CONTROL CENTER -->
+            <div class="col-xl-5 col-lg-6">
+                <div class="cyber-card h-100 d-flex flex-column">
+                    <div class="cyber-header p-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold text-info"><i class="fa-solid fa-terminal me-2"></i>THAO TÁC TẤN CÔNG (ATTACK VECTOR)</h6>
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">Interactive</span>
+                    </div>
+
+                    <div class="p-4 flex-grow-1 d-flex flex-column">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">CHỌN KỊCH BẢN TẤN CÔNG:</label>
+                            <select id="scenario" data-mutation-control class="form-select py-2" onchange="changeScenario()">
+                                <option value="1">🎯 Kịch bản 1: Bypass Auth (Vượt qua đăng nhập)</option>
+                                <option value="2">🔓 Kịch bản 2: Data Exfiltration (Đánh cắp dữ liệu - UNION)</option>
+                                <option value="3">➕ Kịch bản 3: Insert Injection (Tạo tài khoản Admin)</option>
+                                <option value="4">✏️ Kịch bản 4: Update Injection (Sửa quyền / Nâng quyền)</option>
+                                <option value="5">💥 Kịch bản 5: Delete Injection (Xóa bài viết)</option>
+                            </select>
+                        </div>
+
+                        <div class="p-3 mb-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 rounded-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold text-success small"><i class="fa-solid fa-lock me-1"></i> Truy vấn tham số hóa (PreparedStatement)</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">Bật để kiểm thử khả năng phòng chống SQL Injection</small>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" data-mutation-control type="checkbox" id="secureMode" aria-label="Dùng truy vấn tham số hóa" style="width: 2.5em; height: 1.25em; cursor: pointer;">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-semibold">THAM SỐ ĐẦU VÀO (PAYLOAD INPUTS):</label>
+                            <div id="formInputs" class="d-flex flex-column gap-2"></div>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-4 mt-2">
+                            <button data-mutation-control type="button" onclick="fillNormalInput()" class="btn btn-sm btn-outline-secondary">Đầu vào bình thường</button>
+                            <button data-mutation-control type="button" onclick="fillPayload()" class="btn btn-sm btn-outline-info code-font">
+                                <i class="fa-solid fa-bolt me-1"></i> Nạp Payload Mã Độc
+                            </button>
+                            <small id="latencyText" class="text-muted code-font" style="font-size: 0.75rem;"><i class="fa-regular fa-clock me-1"></i> Latency: -- ms</small>
+                        </div>
+
+                        <button id="executeButton" data-mutation-control type="button" onclick="executeAttack()" class="btn btn-danger w-100 fw-bold py-2 mt-auto text-uppercase tracking-wider shadow-sm">
+                            <i class="fa-solid fa-rocket me-2"></i> Thực thi đầu vào
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: LIVE DATABASE VIEW & INSPECTOR -->
+            <div class="col-xl-7 col-lg-6">
+                <div class="cyber-card h-100 d-flex flex-column">
+                    <div class="cyber-header p-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold text-success"><i class="fa-solid fa-database me-2"></i>QUAN SÁT DỮ LIỆU LAB</h6>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Auto Sync</span>
+                    </div>
+
+                    <div class="p-4 flex-grow-1">
+                        <p class="small text-muted mb-2">Bảng quan sát công khai dành cho bài thực hành qua <code>/api/data</code>. Quyền truy cập sau đăng nhập được kiểm tra riêng tại trang tài khoản và quản trị.</p>
+                        <div id="dataStatus" class="small text-muted mb-3" role="status">Đang tải dữ liệu…</div>
+                        <ul class="nav nav-tabs border-secondary mb-3" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active text-light fw-semibold small" id="db-tab" data-bs-toggle="tab" data-bs-target="#db-pane" type="button" role="tab"><i class="fa-solid fa-table me-1"></i> Bảng CSDL</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link text-muted fw-semibold small" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab"><i class="fa-solid fa-book-bookmark me-1"></i> Giải Thích Lỗ Hổng</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="db-pane" role="tabpanel">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small text-muted fw-bold"><i class="fa-solid fa-users me-1"></i> BẢNG USERS:</span>
+                                    </div>
+                                    <div class="table-responsive border border-secondary border-opacity-25 rounded-2" style="max-height: 180px;">
+                                        <table class="table table-cyber mb-0 align-middle">
+                                            <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th></tr></thead>
+                                            <tbody id="usersTable"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small text-muted fw-bold"><i class="fa-solid fa-newspaper me-1"></i> BẢNG POSTS:</span>
+                                    </div>
+                                    <div class="table-responsive border border-secondary border-opacity-25 rounded-2" style="max-height: 180px;">
+                                        <table class="table table-cyber mb-0 align-middle">
+                                            <thead><tr><th>ID</th><th>Title</th><th>Content</th></tr></thead>
+                                            <tbody id="postsTable"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="info-pane" role="tabpanel">
+                                <div id="cheatSheetContent" class="small text-muted p-2 code-font"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM PANEL: SQL INSPECTOR LOG TERMINAL -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="cyber-card">
+                    <div class="terminal-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fa-solid fa-terminal me-1 text-warning"></i> SQL INSPECTOR LOG (THỜI GIAN THỰC)
+                        </div>
+                        <small class="text-muted" style="font-size: 0.7rem;">Real-time SQL Query Inspection & Diagnostics</small>
+                    </div>
+                    <div id="sqlLog" class="terminal-window" aria-live="polite" aria-atomic="true">
+                        <span class="text-muted"><i class="fa-solid fa-angle-right me-1"></i> Sẵn sàng thực thi. Chọn kịch bản, nhập dữ liệu bình thường hoặc payload rồi bấm "Thực thi đầu vào".</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="/demo.js" defer></script>
+</body>
+</html>

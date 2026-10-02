@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quản trị · SQLi Lab</title><link rel="stylesheet" href="/lab-pages.css"><script src="/lab-pages.js" defer></script></head>
+<body><main class="page">
+    <nav><a href="/">← SQLi Lab</a><a href="/account">Tài khoản</a><button id="logoutButton" type="button">Đăng xuất</button></nav>
+    <p class="eyebrow">Trang được bảo vệ · Kiểm tra quyền trên máy chủ</p>
+    <section th:if="${allowed}"><h1>Quản trị người dùng</h1><p class="muted">Đang truy cập bằng <strong th:text="${user.username}"></strong> với quyền <strong th:text="${user.role}"></strong>.</p>
+        <div class="notice"><strong>Đã truy cập được chức năng cần quyền admin.</strong><p>Danh sách bên dưới được máy chủ trả về sau khi kiểm tra phiên và quyền hiện tại. Bạn có thể đăng xuất rồi mở lại địa chỉ này để kiểm tra việc chặn truy cập.</p></div>
+        <section class="card"><h2>Danh sách người dùng</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Tên đăng nhập</th><th>Email</th><th>Quyền</th></tr></thead><tbody><tr th:each="account : ${users}"><td th:text="${account.id}"></td><td th:text="${account.username}"></td><td th:text="${account.email}"></td><td th:text="${account.role}"></td></tr></tbody></table></div></section>
+    </section>
+    <section th:unless="${allowed}"><h1>403 · Không đủ quyền</h1><div class="notice danger"><p>Tài khoản <strong th:text="${user.username}"></strong> có quyền <strong th:text="${user.role}"></strong>. Trang này yêu cầu quyền <code>admin</code>; máy chủ không trả về danh sách người dùng.</p></div><a class="button" href="/account">Về tài khoản</a></section>
+    <p id="feedback" role="status"></p>
+</main></body></html>

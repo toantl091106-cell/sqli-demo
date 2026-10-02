@@ -1,0 +1,40 @@
+name: sqli-demo-verification
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: verification_root_2026
+      MYSQL_DATABASE: sqli_demo
+      MYSQL_USER: sqli_demo
+      MYSQL_PASSWORD: verification_app_2026
+    volumes:
+      - verification_mysql:/var/lib/mysql
+      - ../docker/mysql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP
+          -h 127.0.0.1 -u "$${MYSQL_USER}" "$${MYSQL_DATABASE}"
+          -e 'SELECT id FROM users LIMIT 1; SELECT id FROM posts LIMIT 1;' >/dev/null 2>&1
+      interval: 5s
+      timeout: 5s
+      start_period: 40s
+      retries: 30
+  app:
+    build:
+      context: ..
+    ports:
+      - "127.0.0.1:18080:8080"
+    environment:
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: "8080"
+      SQLI_SESSION_COOKIE: SQLI_DEMO_DOCKER
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/sqli_demo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: sqli_demo
+      SPRING_DATASOURCE_PASSWORD: verification_app_2026
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  verification_mysql:
