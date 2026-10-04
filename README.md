@@ -23,7 +23,9 @@ Chờ log `Started SqliWebDemoApplication`, mở web ở cổng 8080. `Ctrl+C` t
 
 - Mã Java, HTML và JavaScript ở [`java-mysql-demo/code`](java-mysql-demo/code).
 - SQL tạo database và tài khoản mẫu ở [`java-mysql-demo/db`](java-mysql-demo/db).
-- Thực hiện bước nhập SQL trong [hướng dẫn Java/MySQL](java-mysql-demo/README.md), rồi chạy `java-mysql-demo/run.cmd` trên Windows.
+- Trên Windows: tải ZIP của nhánh `update` và giải nén toàn bộ repo, cài JDK và chuẩn bị MySQL một lần theo [hướng dẫn Java/MySQL](java-mysql-demo/README.md), rồi nhấp đúp **[`Mo-web.cmd`](Mo-web.cmd)**. File này cũng có trong `java-mysql-demo`.
+- Launcher tự tìm JDK qua `JAVA_HOME` hoặc `PATH`, build code bằng Maven Wrapper và mở trình duyệt khi web kết nối được database. Không cần tải file JAR riêng hoặc sửa đường dẫn theo máy người tạo.
+- Web chạy nền; nhấp đúp **[`Dung-web.cmd`](Dung-web.cmd)** để dừng. Khi sửa code, dừng rồi mở lại để build bản mới. MySQL và dữ liệu vẫn được giữ.
 - Điểm khởi động web là `SqliWebDemoApplication.java`. Bản console `Main.java` cũ đã được bỏ khỏi gói web để tránh chạy nhầm kịch bản.
 
 Hai cách dùng database và tên cookie riêng nên có thể chạy song song. Nếu cổng bị chiếm, xem hướng dẫn từng phần để đổi cổng. Bản Docker cũ đang chạy cổng 8080/3307 cần được dừng hoặc đổi cổng trước khi mở thêm bản Docker này.
